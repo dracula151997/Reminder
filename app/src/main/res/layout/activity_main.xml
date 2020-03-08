@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data class="MainActivityBind" />
+
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:openDrawer="start"
+        android:fitsSystemWindows="true"
+        tools:context=".MainActivity">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?actionBarSize"
+                android:background="?attr/colorPrimary"
+                app:contentInsetStart="0dp">
+
+                <ImageView
+                    android:id="@+id/menu"
+                    android:layout_width="?actionBarSize"
+                    android:layout_height="?actionBarSize"
+                    android:clickable="true"
+                    android:contentDescription="@string/menu"
+                    android:focusable="true"
+                    android:scaleType="center"
+                    android:src="@drawable/ic_menu_black_24dp"
+                    android:tint="@android:color/white" />
+
+                <TextView
+                    android:id="@+id/toolbar_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start|center_vertical"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:maxLines="1"
+                    android:text="Reminder"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp" />
+
+
+            </androidx.appcompat.widget.Toolbar>
+
+            <fragment
+                android:id="@+id/nav_host_fragment"
+                android:name="androidx.navigation.fragment.NavHostFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/toolbar"
+                app:defaultNavHost="true"
+                app:navGraph="@navigation/main_graph" />
+
+        </RelativeLayout>
+
+
+        <include layout="@layout/layout_drawer"
+            android:id="@+id/drawer"/>
+
+
+    </androidx.drawerlayout.widget.DrawerLayout>
+
+</layout>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data class="MainFragmentBind"/>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".fragments.MainFragment">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/category_recycler"
+            android:layout_width="match_parent"
+            android:scrollbars="vertical"
+            android:layout_height="match_parent"
+            tools:listitem="@layout/list_item_category"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        <LinearLayout
+            android:id="@+id/empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="110dp"
+                android:layout_height="110dp"
+                android:contentDescription="empty"
+                android:scaleType="center"
+                android:src="@drawable/ic_empty_category" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/no_categories_found"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Create a new category to start\n taking notes"
+                android:textAlignment="center" />
+        </LinearLayout>
+
+        <com.project.semicolon.reminder.views.Fab
+            android:id="@+id/fab"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_margin="16dp"
+            android:background="?attr/fabColor"
+            android:clickable="true"
+            android:elevation="8dp"
+            android:scaleType="center"
+            android:focusable="true"
+            app:layout_anchor="@+id/category_recycler"
+            app:layout_anchorGravity="bottom|end"
+            app:layout_behavior=".utils.FabBehavior"
+            app:srcCompat="@drawable/ic_new_category" />
+
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>
