@@ -25,4 +25,8 @@
     <string name="note">Note</string>
     <string name="edit_category">Edit Category</string>
     <string name="edit">Edit</string>
+    <string name="deleted_msg">Deleted</string>
+    <string name="edited_msg">Edited</string>
+    <string name="saved_msg">Saved</string>
+    <string name="untitled">Untitled</string>
 </resources>

@@ -7,35 +7,44 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.ItemTouchHelper.Callback;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.project.semicolon.reminder.NoteActivity;
 import com.project.semicolon.reminder.R;
 import com.project.semicolon.reminder.TakeNoteActivity;
 import com.project.semicolon.reminder.adapters.GenericAdapter;
+import com.project.semicolon.reminder.adapters.SwipeController;
 import com.project.semicolon.reminder.database.DatabaseHelper;
 import com.project.semicolon.reminder.database.entity.Note;
 import com.project.semicolon.reminder.databinding.NoteFragmentBind;
 import com.project.semicolon.reminder.listeners.OnViewClickedListener;
 import com.project.semicolon.reminder.utils.AnimatorUtil;
+import com.project.semicolon.reminder.utils.AppExecutors;
+import com.project.semicolon.reminder.utils.Keys;
 import com.project.semicolon.reminder.utils.SharedHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NoteFragment extends Fragment implements OnViewClickedListener {
+public class NoteFragment extends Fragment implements
+        OnViewClickedListener, SwipeController.OnRecyclerViewSwipedListener {
     private static final String TAG = "NoteFragment";
-    int theme;
-    int categoryId;
+    private int theme;
+    private int categoryId;
     private NoteFragmentBind noteFragmentBind;
     private boolean isFabOpen = false;
-    private NoteActivity noteActivity;
+    private List<Note> noteList;
     private DatabaseHelper db;
     private GenericAdapter<Note> noteAdapter;
 
@@ -50,7 +59,8 @@ public class NoteFragment extends Fragment implements OnViewClickedListener {
         Bundle data = getArguments();
 
         db = DatabaseHelper.getInstance(getContext());
-        categoryId = SharedHelper.get(getContext(), "id");
+        categoryId = SharedHelper.getInstance().getInt(Keys.CATEGORY_ID.getKey(), -1);
+        noteList = new ArrayList<>();
 
     }
 
@@ -61,9 +71,13 @@ public class NoteFragment extends Fragment implements OnViewClickedListener {
         noteFragmentBind = NoteFragmentBind.inflate(inflater, container, false);
         noteFragmentBind.setListener(this);
 
-        noteAdapter = new GenericAdapter<>(R.layout.list_item_notes);
-        noteFragmentBind.notesRecycler.setAdapter(noteAdapter);
+        initRecyclerView();
 
+        fetchAllNotes();
+        return noteFragmentBind.getRoot();
+    }
+
+    private void fetchAllNotes() {
 
         db.noteDao().getNotesForCategory(categoryId)
                 .observe(getViewLifecycleOwner(), new Observer<List<Note>>() {
@@ -71,6 +85,7 @@ public class NoteFragment extends Fragment implements OnViewClickedListener {
                     public void onChanged(List<Note> notes) {
                         Log.d(TAG, "onChanged: notes: " + notes.toString());
                         if (!notes.isEmpty()) {
+                            noteList.addAll(notes);
                             noteFragmentBind.emptyState.setVisibility(View.GONE);
                             noteAdapter.setItems(notes);
                             return;
@@ -80,7 +95,16 @@ public class NoteFragment extends Fragment implements OnViewClickedListener {
 
                     }
                 });
-        return noteFragmentBind.getRoot();
+    }
+
+    private void initRecyclerView() {
+        noteAdapter = new GenericAdapter<>(R.layout.list_item_notes);
+        SwipeController swipeController = new SwipeController(getContext());
+        ItemTouchHelper touchHelper = new ItemTouchHelper(swipeController);
+        swipeController.setOnRecyclerViewSwipedListener(this);
+        touchHelper.attachToRecyclerView(noteFragmentBind.notesRecycler);
+        noteFragmentBind.notesRecycler.setAdapter(noteAdapter);
+
     }
 
     @Override
@@ -151,6 +175,34 @@ public class NoteFragment extends Fragment implements OnViewClickedListener {
                     .startVisibility(View.VISIBLE)
                     .animate(R.anim.fab_in);
         }
+
+    }
+
+    @Override
+    public void onDeleteSwiped(final int position) {
+        final Note note = noteList.get(position);
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                int deletedRaw = db.noteDao().deleteNote(note.getId());
+                if (deletedRaw == 1){
+                    AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            noteAdapter.deleteItem(position);
+                            Toast.makeText(getContext(), R.string.deleted_msg, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+
+            }
+        });
+
+
+    }
+
+    @Override
+    public void onEditSwiped(int position, RecyclerView.ViewHolder viewHolder) {
 
     }
 }

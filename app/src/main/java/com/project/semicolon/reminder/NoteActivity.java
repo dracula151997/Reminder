@@ -10,6 +10,7 @@ import androidx.navigation.Navigation;
 
 import com.project.semicolon.reminder.database.entity.Category;
 import com.project.semicolon.reminder.databinding.NoteActivityBind;
+import com.project.semicolon.reminder.utils.Keys;
 import com.project.semicolon.reminder.utils.SharedHelper;
 
 public class NoteActivity extends AppCompatActivity {
@@ -23,7 +24,7 @@ public class NoteActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         data = getIntent();
-        Category category = data.getParcelableExtra("categoryModel");
+        Category category = data.getParcelableExtra(Keys.CATEGORY.getKey());
         theme = category.getTheme();
         setTheme(Category.getStyle(theme));
 
@@ -37,10 +38,7 @@ public class NoteActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        Bundle bundle = new Bundle();
-        bundle.putInt("theme", theme);
-        Navigation.findNavController(this, R.id.nav_host_fragment)
-                .navigate(R.id.noteFragment, bundle);
+        startDefaultFragment();
 
         noteActivityBind.back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,7 +50,14 @@ public class NoteActivity extends AppCompatActivity {
             }
         });
 
-        SharedHelper.save(this, "id", category.getId());
+        SharedHelper.getInstance().storeInt(Keys.CATEGORY_ID.getKey(), category.getId());
+    }
+
+    private void startDefaultFragment() {
+        Bundle bundle = new Bundle();
+        bundle.putInt(Keys.THEME.getKey(), theme);
+        Navigation.findNavController(this, R.id.nav_host_fragment)
+                .navigate(R.id.noteFragment, bundle);
     }
 
 }

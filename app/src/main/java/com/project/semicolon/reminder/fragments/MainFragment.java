@@ -31,6 +31,7 @@ import com.project.semicolon.reminder.databinding.CategoryDialogBind;
 import com.project.semicolon.reminder.databinding.MainFragmentBind;
 import com.project.semicolon.reminder.listeners.OnListItemClickListener;
 import com.project.semicolon.reminder.utils.AppExecutors;
+import com.project.semicolon.reminder.utils.Keys;
 import com.project.semicolon.reminder.utils.Logger;
 import com.project.semicolon.reminder.utils.SharedHelper;
 
@@ -75,6 +76,14 @@ public class MainFragment extends Fragment implements OnListItemClickListener,
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        displayDialog();
+
+        initRecyclerView();
+
+        fetchCategories();
+    }
+
+    private void displayDialog() {
         mainFragmentBind.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -84,16 +93,16 @@ public class MainFragment extends Fragment implements OnListItemClickListener,
 
             }
         });
+    }
+
+    private void initRecyclerView() {
         categoryAdapter = new GenericAdapter<>(R.layout.list_item_category);
-        SwipeController swipeController = new SwipeController(getContext(), categoryAdapter);
+        SwipeController swipeController = new SwipeController(getContext());
         swipeController.setOnRecyclerViewSwipedListener(this);
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeController);
         itemTouchHelper.attachToRecyclerView(mainFragmentBind.categoryRecycler);
-
-
         categoryAdapter.setOnListItemClickListener(this);
         mainFragmentBind.categoryRecycler.setAdapter(categoryAdapter);
-        fetchCategories();
     }
 
     private void fetchCategories() {
@@ -221,7 +230,7 @@ public class MainFragment extends Fragment implements OnListItemClickListener,
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(getActivity(), "Edited", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), R.string.edited_msg, Toast.LENGTH_SHORT).show();
                         categoryAdapter.editItem(position, category);
                     }
                 });
@@ -246,14 +255,20 @@ public class MainFragment extends Fragment implements OnListItemClickListener,
         categoryModel.setTheme(categoryTheme);
         categoryModel.setCreatedAt(System.currentTimeMillis());
 
+        insertNewCategory();
+
+
+
+
+    }
+
+    private void insertNewCategory() {
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
                 db.categoryDao().insert(categoryModel);
             }
         });
-
-
     }
 
     private ImageView getThemeView(CategoryDialogBind dialogBind, int theme) {
@@ -276,9 +291,9 @@ public class MainFragment extends Fragment implements OnListItemClickListener,
     @Override
     public void onItemClicked(View view, int position) {
         Category category = categoryList.get(position);
-        SharedHelper.save(getContext(), "theme", category.getTheme());
+        SharedHelper.getInstance().storeInt(Keys.THEME.getKey(), category.getTheme());
         Intent intent = new Intent(getContext(), NoteActivity.class);
-        intent.putExtra("categoryModel", category);
+        intent.putExtra(Keys.CATEGORY.getKey(), category);
         startActivity(intent);
 
 
@@ -299,7 +314,7 @@ public class MainFragment extends Fragment implements OnListItemClickListener,
                         @Override
                         public void run() {
                             categoryAdapter.deleteItem(position);
-                            Toast.makeText(getContext(), "Deleted", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), getString(R.string.deleted_msg), Toast.LENGTH_SHORT).show();
                         }
                     });
 

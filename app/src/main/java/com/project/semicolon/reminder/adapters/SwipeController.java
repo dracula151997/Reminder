@@ -21,16 +21,14 @@ public class SwipeController extends ItemTouchHelper.SimpleCallback {
 
     private final ColorDrawable deleteBackground;
     private final ColorDrawable editBackground;
-    private GenericAdapter<com.project.semicolon.reminder.database.entity.Category> genericAdapter;
     private Drawable deleteIcon;
     private Drawable editIcon;
     private Paint paint;
     private OnRecyclerViewSwipedListener onRecyclerViewSwipedListener;
 
 
-    public SwipeController(Context context, GenericAdapter<com.project.semicolon.reminder.database.entity.Category> genericAdapter) {
+    public SwipeController(Context context) {
         super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
-        this.genericAdapter = genericAdapter;
         deleteIcon = ContextCompat.getDrawable(context, R.drawable.ic_delete_sweep_black_24dp);
         deleteIcon.setTint(Color.WHITE);
         paint = new Paint();

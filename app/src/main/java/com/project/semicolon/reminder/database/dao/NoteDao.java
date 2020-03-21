@@ -14,5 +14,8 @@ public interface NoteDao extends BaseDao<Note> {
     @Query("SELECT * FROM note WHERE categoryId=:categoryId ORDER BY created_at ASC")
     LiveData<List<Note>> getNotesForCategory(int categoryId);
 
+    @Query("DELETE FROM note WHERE id =:noteId")
+    int deleteNote(int noteId);
+
 
 }

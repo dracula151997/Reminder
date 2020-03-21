@@ -18,6 +18,7 @@ import com.project.semicolon.reminder.database.entity.Note;
 import com.project.semicolon.reminder.databinding.SimpleNoteFragBind;
 import com.project.semicolon.reminder.listeners.OnEditorClickedListener;
 import com.project.semicolon.reminder.utils.AppExecutors;
+import com.project.semicolon.reminder.utils.Keys;
 import com.project.semicolon.reminder.utils.SharedHelper;
 
 /**
@@ -39,8 +40,8 @@ public class SimpleNoteFragment extends Fragment implements OnEditorClickedListe
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         db = DatabaseHelper.getInstance(getContext());
-        categoryId = SharedHelper.get(getContext(), "id");
-        theme = SharedHelper.get(getContext(), "theme");
+        categoryId = SharedHelper.getInstance().getInt(Keys.CATEGORY_ID.getKey(), -1);
+        theme = SharedHelper.getInstance().getInt(Keys.THEME.getKey(), 0);
 
     }
 
@@ -53,7 +54,11 @@ public class SimpleNoteFragment extends Fragment implements OnEditorClickedListe
         noteFragBind.setEditorListener(this);
         noteFragBind.richEditor.setPlaceholder(getString(R.string.note));
 
+        overrideOnBackPressed();
+        return noteFragBind.getRoot();
+    }
 
+    private void overrideOnBackPressed() {
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -64,37 +69,39 @@ public class SimpleNoteFragment extends Fragment implements OnEditorClickedListe
         };
 
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
-        return noteFragBind.getRoot();
     }
 
     private void saveNoteToDB() {
-        final Note note = new Note();
-        note.setTitle(noteFragBind.titleEdit.getText().toString());
+        String noteTitle = noteFragBind.titleEdit.getText().toString();
+        note.setTitle(noteTitle != null ? noteTitle : getString(R.string.untitled));
         note.setDesc(noteFragBind.richEditor.getHtml());
         note.setCreatedAt(System.currentTimeMillis());
         note.setCategoryId(categoryId);
         note.setType(2);
         note.setTheme(theme);
 
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                db.noteDao().insert(note);
-
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getContext(), "Saved", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-            }
-        });
+        insertNewNote();
 
         Navigation.findNavController(getActivity(), R.id.nav_host_fragment)
                 .navigate(R.id.noteFragment);
 
 
+    }
+
+    private void insertNewNote() {
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                db.noteDao().insert(note);
+
+                AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getContext(), R.string.saved_msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
     }
 
     @Override

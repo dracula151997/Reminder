@@ -14,7 +14,8 @@ import com.project.semicolon.reminder.listeners.OnListItemClickListener;
 import java.util.List;
 
 public class GenericAdapter<T extends ListItemViewModel> extends
-        RecyclerView.Adapter<GenericAdapter<T>.GenericViewHolder<T>> implements SwipeController.ItemTouchHelperViewHolder {
+        RecyclerView.Adapter<GenericAdapter<T>.GenericViewHolder<T>> implements
+        SwipeController.ItemTouchHelperViewHolder {
     private List<T> items;
     @LayoutRes
     private int layoutRes;

@@ -16,6 +16,7 @@ import com.project.semicolon.reminder.database.entity.Note;
 import com.project.semicolon.reminder.databinding.DrawingFragmentBind;
 import com.project.semicolon.reminder.listeners.OnDrawListener;
 import com.project.semicolon.reminder.utils.AppExecutors;
+import com.project.semicolon.reminder.utils.Keys;
 import com.project.semicolon.reminder.utils.SharedHelper;
 import com.project.semicolon.reminder.views.DrawingView;
 
@@ -35,19 +36,22 @@ public class DrawingFragment extends Fragment implements OnDrawListener {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        theme = SharedHelper.get(getContext(), "theme");
-        categoryId = SharedHelper.get(getContext(), "id");
-
+        theme = SharedHelper.getInstance().getInt(Keys.THEME.getKey(), 0);
+        categoryId = SharedHelper.getInstance().getInt(Keys.CATEGORY_ID.getKey(), -1);
         db = DatabaseHelper.getInstance(getContext());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         drawingFragmentBind = DrawingFragmentBind.inflate(inflater, container, false);
         drawingFragmentBind.setDrawListener(this);
 
+        overrideOnBackPressed();
+        return drawingFragmentBind.getRoot();
+    }
+
+    private void overrideOnBackPressed() {
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -57,7 +61,7 @@ public class DrawingFragment extends Fragment implements OnDrawListener {
         };
 
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
-        return drawingFragmentBind.getRoot();
+
     }
 
     private void saveNote() {
